@@ -24,30 +24,31 @@ namespace WebApplication1.Controllers
 
         // GET: api/<UsersController>
         [HttpGet]
-        public IEnumerable<User> Get()
+        public ActionResult<IEnumerable<User>> Get()
         {
-            return users;
+            return users.Count() > 0 ? Ok(users) : NotFound();
         }
 
         // GET api/<UsersController>/5
         [HttpGet("{id}")]
-        public User Get(int id)
+        public ActionResult<User> Get(int id)
         {
-            return users.FirstOrDefault(u => u.Id == id);
+            var user = users.FirstOrDefault(u => u.Id == id);
+            return user != null ? Ok(user) : NotFound();
         }
 
         // POST api/<UsersController>
         [HttpPost]
-        public User Post([FromBody] User user)
+        public ActionResult<User> Post([FromBody] User user)
         {
             user.Id = users.Max(u => u.Id) + 1;
             users.Add(user);
-            return user;
+            return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
         }
 
         // PUT api/<UsersController>/5
         [HttpPut("{id}")]
-        public User Put(int id, [FromBody] User user)
+        public ActionResult<User> Put(int id, [FromBody] User user)
         {
             var existingUser = users.FirstOrDefault(u => u.Id == id);
             if (existingUser != null)
@@ -55,18 +56,19 @@ namespace WebApplication1.Controllers
                 existingUser.Name = user.Name;
                 existingUser.Email = user.Email;
             }
-            return user;
+            return existingUser != null ? Ok(existingUser) : NotFound();
         }
 
         // DELETE api/<UsersController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public ActionResult Delete(int id)
         {
             var user = users.FirstOrDefault(u => u.Id == id);
             if (user != null)
             {
                 users.Remove(user);
             }
+            return user != null ? NoContent() : NotFound();
         }
     }
 }
